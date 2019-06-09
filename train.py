@@ -163,8 +163,8 @@ if __name__ == "__main__":
 		args.args.thresh_range.append(args.args.thresh)
 	elif args.args.thresh_range:
 		print('threshold range: ', args.args.thresh_range)
-		thresholds = np.arange(*args.args.thresh_range)
-		print('thresholds : ', thresholds)
+		args.args.thresh_range = np.arange(*args.args.thresh_range)
+		print('thresholds : ', args.args.thresh_range)
 
 	lastBoxSz = '0'
 
@@ -174,8 +174,8 @@ if __name__ == "__main__":
 		# skip training if evalutaion argument switch
 		if not args.args.evaluate:
 			lastBoxSz = train(pathsDic, lastBoxSz)
-		# evaluate only if thresholds were specified
-		if args.args.thresh_range:
+		# evaluate if thresholds were specified
+		if len(args.args.thresh_range) > 0:
 			try:
 				test.test(pathsDic)
 			except Exception as err:

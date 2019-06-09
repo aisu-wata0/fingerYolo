@@ -131,8 +131,12 @@ def test(pathsDic):
 	# save comparison stats to curve.txt 
 	with open(pathsDic['curve'] + '.txt', 'w') as curveFile:
 		for resultListType in resultMean:
+			for thresh in args.args.thresh_range:
+				thresh = round(thresh, 4)
+				curveFile.write('{:0.10f} '.format(thresh))
+			curveFile.write('\n')
 			for val in resultListType:
-				curveFile.write('{} '.format(val))
+				curveFile.write('{:0.10f} '.format(val))
 			curveFile.write('\n')
 	# plot stats curve
 	import matplotlib.pyplot as plt
