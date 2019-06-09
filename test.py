@@ -133,7 +133,7 @@ def test(pathsDic):
 		for resultListType in resultMean:
 			for thresh in args.args.thresh_range:
 				thresh = round(thresh, 4)
-				curveFile.write('{:0.10f} '.format(thresh))
+				curveFile.write('{:0.4f} '.format(thresh))
 			curveFile.write('\n')
 			for val in resultListType:
 				curveFile.write('{:0.10f} '.format(val))

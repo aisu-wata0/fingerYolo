@@ -26,5 +26,8 @@ python fingeryolo/train.py ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30/  -tr 0
 
 python fingeryolo/train.py ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30/  -tr 0.025 1.0 0.025 -e 2>&1 | tee train-$(date +%Y%m%d-%H%M).log
 
-python fingeryolo/train.py  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-40  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-16  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-60        ./fingeryolo/testsOpen/v2-voc-anchor5-box-30  ./fingeryolo/testsOpen/v3-spp2-anchor0-box-30  ./fingeryolo/testsOpen/v3-spp2-anchor1-box-16  ./fingeryolo/testsOpen/v3-spp2-anchor1-box-40  ./fingeryolo/testsOpen/v3-spp2-anchor1-box-60  ./fingeryolo/testsOpen/v3-spp2-anchor1-box-60  -tr 0.025 1.0 0.025  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
+python fingeryolo/train.py  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-40  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-16  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-60        ./fingeryolo/testsOpen/v2-voc-anchor5-box-30  ./fingeryolo/testsOpen/v3-spp2-anchor0-box-30  ./fingeryolo/testsOpen/v3-spp2-anchor1-box-16  ./fingeryolo/testsOpen/v3-spp2-anchor1-box-40  ./fingeryolo/testsOpen/v3-spp2-anchor1-box-60  -tr 0.025 1.0 0.025  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
+
+
+python fingeryolo/train.py   ./fingeryolo/testsOpen/v3-yolo-anchor1-box-30   ./fingeryolo/testsOpen/v3-spp2-anchor1-box-40    ./fingeryolo/testsOpen/v3-spp2-anchor1-box-60   ./fingeryolo/testsClosed/v3-spp2-anchor1-box-40/    ./fingeryolo/testsClosed/v3-spp2-anchor1-box-60/  -tr 0.025 1.0 0.025  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
 
