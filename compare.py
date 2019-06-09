@@ -288,15 +288,7 @@ def compareLabelsDir(pathDirTrue, pathDirPred, threshold=16):
 			totalTruePos = len(pointsTrue)
 			totalPredPos = len(pointsPred)
 			result = minutia_match([pointsTrue], [pointsPred], threshold)
-			resultOld = minutia_matchOld([pointsTrue], [pointsPred], threshold)
 			truePos, falsePos, falseNeg, mse = result
-			diffSum = (np.array(result) - np.array(resultOld)).sum()
-			if diffSum > 1.0e-06:
-				print("minutia_match:  ptsTrueNo=", len(pointsTrue),"; ptsFalseNo=", len(pointsPred))
-				print("result   ", result)
-				print("resultOld", resultOld)
-				print("diff", np.array(result) - np.array(resultOld))
-				print("diffSum=", diffSum)
 
 			precision, recall, f1Score = Grimoire.precisionRecall(truePos, falsePos, falseNeg)
 

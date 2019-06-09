@@ -46,8 +46,7 @@ def files(pathNetDir):
 
 	pathsDic['imgs'] = pathDirScript + '/imgs'
 	
-	pathsDic['finalweight'] = lambda: sorted(
-		glob.iglob(pathsDic['weights'] + '/*.weights'))[-1]
+	pathsDic['finalweight'] = lambda: sorted(glob.iglob(pathsDic['weights'] + '/*.weights'))[-1]
 
 	## Parse obj.data
 	if args.args.verbose:
