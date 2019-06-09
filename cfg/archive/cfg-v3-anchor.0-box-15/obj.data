@@ -1,0 +1,5 @@
+classes= 1
+train  = fingerYolo/train.txt
+valid  = fingerYolo/test.txt
+names = fingerYolo/obj.names
+backup = fingerYolo/weightBackups

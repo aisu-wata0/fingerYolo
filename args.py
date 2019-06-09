@@ -1,0 +1,3 @@
+
+global args
+args = None
