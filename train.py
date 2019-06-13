@@ -18,7 +18,7 @@ def files(pathNetDir):
 	pathsDic = {'dir': pathNetDir}
 	if not os.path.isdir(pathNetDir):
 		print("-- skipping, not a directory: ", pathNetDir, flush=True)
-		return
+		return None
 	print('Running dir ', pathNetDir, flush=True)
 	# find out name of net
 	pathsDic['name'] = os.path.basename(pathNetDir)
@@ -170,6 +170,8 @@ if __name__ == "__main__":
 	command = './darknet.exe detector train "{}" "{}" -map'
 	for pathNetDir in args.args.pathNetDir:
 		pathsDic = files(pathNetDir)
+		if not pathsDic:
+			continue
 		# skip training if evalutaion argument switch
 		if not args.args.evaluate:
 			lastBoxSz = train(pathsDic, lastBoxSz)
