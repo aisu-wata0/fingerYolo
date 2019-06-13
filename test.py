@@ -66,23 +66,20 @@ def yolo(bashCommand, validListPath, pathOut, thresh):
 	print()
 	return
 
-
-def test(pathsDic):
-	print('threshold range: ', args.args.thresh_range)
-	
+def evaluateNet(pathsDic):
 	# try to get trained weights
 	try:
 		weight = pathsDic['finalweight']()
 	except IndexError:
 		print('--- weight files not found')
 		return
-		
+
 	print("weight file:", weight)
 
 	resultMean = []
 	## print setup
 	resultTags = ["missRate", "falsePos",
-               "falseDiscoveryRate", "mse"]
+					"falseDiscoveryRate", "mse"]
 	resultTagLength = len(max(resultTags, key=len))
 	stringFormat = '{0:>%d}' % (resultTagLength+1)
 	floatFormat = '{0:>%d.4}' % (resultTagLength+1)
@@ -94,8 +91,8 @@ def test(pathsDic):
 	for thresh in args.args.thresh_range:
 		thresh = round(thresh, 4)
 		pathDirPred = '{}-t{:0.3f}'.format(pathsDic['outDir'], thresh)
-		# if prediction not made yet
-		if not os.path.isdir(pathDirPred):
+		# if prediction not made yet, (if dir not exists or is empty)
+		if not os.path.isdir(pathDirPred) or (len(list(glob.iglob('/'.join([pathDirPred, "*.txt"])))) < 1):
 			# call yolo to make predictions
 			# yolo command to test network and save labels to compare
 			bashCommand = './darknet detector test {} {} {} -ext_output '.format(
@@ -103,7 +100,8 @@ def test(pathsDic):
 			bashCommand = bashCommand + ' -dont_show ' + ' -save_labels '
 			yolo(bashCommand, pathsDic['valid'], pathDirPred, thresh)
 
-		print('python {} {} {}'.format('compare.py', pathDirPred, pathsDic['labelsTrue']), flush=True)
+		print('python {} {} {}'.format('compare.py',
+										pathDirPred, pathsDic['labelsTrue']), flush=True)
 		# compare predictions with true labels
 		if not args.args.dry:
 			result = compare.compareLabelsDir(pathsDic['labelsTrue'], pathDirPred)
@@ -128,16 +126,47 @@ def test(pathsDic):
 			line += '{:<8.4f}'.format(val) + ' '
 		print(line)
 	##
-	# save comparison stats to curve.txt 
-	with open(pathsDic['curve'] + '.txt', 'w') as curveFile:
-		for resultListType in resultMean:
+	# save comparison stats to curve.txt
+	print("Saving eval to: ", pathsDic['curve'] + '.txt', flush=True)
+	if not args.args.dry:
+		with open(pathsDic['curve'] + '.txt', 'w') as curveFile:
 			for thresh in args.args.thresh_range:
 				thresh = round(thresh, 4)
 				curveFile.write('{:0.4f} '.format(thresh))
 			curveFile.write('\n')
-			for val in resultListType:
-				curveFile.write('{:0.10f} '.format(val))
-			curveFile.write('\n')
+			for resultListType in resultMean:
+				for val in resultListType:
+					curveFile.write('{} '.format(val))
+				curveFile.write('\n')
+	
+	return resultMean
+
+
+def readCurveTxt(pathsDic):
+	resultMean = []
+	with open(pathsDic['curve'] + '.txt', 'r') as curveFile:
+		line = curveFile.readline()
+		line = line.rstrip()
+		tresholdList = list(map(float, line.split(' ')))
+		for lineNo, line in enumerate(curveFile):
+			# result values
+			line = line.rstrip()
+			resultType = list(map(float, line.split(' ')))
+			# print('append: ', resultType)
+			resultMean.append(resultType)
+
+	return resultMean, tresholdList
+
+
+def test(pathsDic):
+	print('thresholds: ', args.args.thresh_range)
+
+	if not os.path.isfile(pathsDic['curve'] + '.txt'):
+		# use network and available weights to create curve
+		resultMean = evaluateNet(pathsDic)
+	else:
+		resultMean, tresholdList = readCurveTxt(pathsDic)
+
 	# plot stats curve
 	import matplotlib.pyplot as plt
 	# plot falseDiscoveryRate x missRate

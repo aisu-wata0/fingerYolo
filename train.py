@@ -163,7 +163,6 @@ if __name__ == "__main__":
 	elif args.args.thresh_range:
 		print('threshold range: ', args.args.thresh_range)
 		args.args.thresh_range = np.arange(*args.args.thresh_range)
-		print('thresholds : ', args.args.thresh_range)
 
 	lastBoxSz = '0'
 
