@@ -35,3 +35,7 @@ python fingeryolo/train.py   ./fingeryolo/testsOpen/v3-yolo-anchor1-box-30   ./f
 python fingeryolo/train.py    ./fingeryolo/testsClosed/v3-spp2-anchor1-box-60/  -tr 0.025 1.0 0.025  -e  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
 
 python fingeryolo/train.py   ./fingeryolo/testsOpen/* ./fingeryolo/testsClosed/*   -tr 0.025 1.0 0.025 -e  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
+
+
+
+python fingeryolo/train.py   ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30/   -tr 0.025 1.0 0.025 -e 

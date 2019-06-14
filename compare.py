@@ -151,7 +151,7 @@ def minutia_match(pointsTypedA, pointsTypedB, threshold):
 	return [truePos, falsePos, falseNeg, mse]
 
 
-def minutia_matchOld(pointsTypedA, pointsTypedB, threshold):
+def minutia_matchSlow(pointsTypedA, pointsTypedB, threshold):
 	"""
 	----------
 	pointsTypedA : true points [[], [], []]
@@ -258,11 +258,9 @@ def compareLabelsDir(pathDirTrue, pathDirPred, threshold=16):
 	pathDirTrue : path to true labels directory
 	threshold : pixel distance threshold to consider point match
 	-----
-	return missRateList, falsePosList, falseDiscoveryRateList, mseList
+	return grimoire.stats(), mseList
 	"""
-	missRateList = []
-	falsePosList = []
-	falseDiscoveryRateList = []
+	stats = Grimoire.stats()
 	mseList = []
 
 	for pathFilePred in glob.iglob('/'.join([pathDirPred, "*.txt"])):
@@ -289,24 +287,16 @@ def compareLabelsDir(pathDirTrue, pathDirPred, threshold=16):
 			totalPredPos = len(pointsPred)
 			result = minutia_match([pointsTrue], [pointsPred], threshold)
 			truePos, falsePos, falseNeg, mse = result
+			stats.append(truePos, falsePos, falseNeg)
+			mseList.append(mse)
 
-			precision, recall, f1Score = Grimoire.precisionRecall(truePos, falsePos, falseNeg)
-
-			missRate = falseNeg/totalTruePos
 		except Exception as e:
 			print('Exception while comparing: ', pathFilePred, ' with ', pathFileTrue)
 			print(e, flush=True)
 			traceback.print_exc()
-		else:
-			missRateList.append(missRate)
-			falsePosList.append(falsePos)
-			if not totalPredPos == 0:
-				falseDiscoveryRateList.append(falsePos/totalPredPos)
-			else:
-				falseDiscoveryRateList.append(0)
-			mseList.append(mse)
 
-	return missRateList, falsePosList, falseDiscoveryRateList, mseList
+	stats.end()
+	return stats, mseList
 
 
 if __name__ == "__main__":

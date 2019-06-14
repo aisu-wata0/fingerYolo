@@ -12,6 +12,7 @@ import errno
 import argparse
 import logging as log
 import numpy as np
+import matplotlib.pyplot as plt
 
 import compare
 import Grimoire
@@ -76,17 +77,13 @@ def evaluateNet(pathsDic):
 
 	print("weight file:", weight)
 
-	resultMean = []
 	## print setup
-	resultTags = ["missRate", "falsePos",
-					"falseDiscoveryRate", "mse"]
-	resultTagLength = len(max(resultTags, key=len))
-	stringFormat = '{0:>%d}' % (resultTagLength+1)
-	floatFormat = '{0:>%d.4}' % (resultTagLength+1)
+	resultTags = ["precision", "recall", "f1Score"]
+	resultTagsLength = len(max(resultTags, key=len))
+	stringFormat = '{0:>%d}' % (resultTagsLength+1)
+	floatFormat = '{0:>%d.4}' % (resultTagsLength+1)
 	##
-	# 4 is the number of variables compareLabelsDir returns
-	for arg in range(4):
-		resultMean.append([])
+	statsCurve = Grimoire.statsCurve()
 
 	for thresh in args.args.thresh_range:
 		thresh = round(thresh, 4)
@@ -104,42 +101,27 @@ def evaluateNet(pathsDic):
 										pathDirPred, pathsDic['labelsTrue']), flush=True)
 		# compare predictions with true labels
 		if not args.args.dry:
-			result = compare.compareLabelsDir(pathsDic['labelsTrue'], pathDirPred)
-			# missRateList, falsePosList, falseDiscoveryRateList, mseList = result
-			tmpResults = []
-			for res_arg, res in enumerate(result):
-				resultMean[res_arg].append(np.mean(res))
-				tmpResults.append(f'{np.mean(res):0.4f}')
-			## print for user
-			lines = ['']*2
-			for val, tag in zip(tmpResults, resultTags):
-				lines[0] += stringFormat.format(tag)
-				lines[1] += floatFormat.format(val)
-			for line in lines:
-				print(line)
-				#
-	## print for user
-	for resultListType, tag in zip(resultMean, resultTags):
-		print(stringFormat.format(tag))
-		line = ''
-		for val in resultListType:
-			line += '{:<8.4f}'.format(val) + ' '
-		print(line)
+			stats, mseList = compare.compareLabelsDir(pathsDic['labelsTrue'], pathDirPred)
+			statsCurve.append(stats, thresh)
+			stats.printPrecisionRecall()
+			print("mse=", np.mean(mseList))
+
+	statsCurve.end()
 	##
 	# save comparison stats to curve.txt
-	print("Saving eval to: ", pathsDic['curve'] + '.txt', flush=True)
-	if not args.args.dry:
-		with open(pathsDic['curve'] + '.txt', 'w') as curveFile:
-			for thresh in args.args.thresh_range:
-				thresh = round(thresh, 4)
-				curveFile.write('{:0.4f} '.format(thresh))
-			curveFile.write('\n')
-			for resultListType in resultMean:
-				for val in resultListType:
-					curveFile.write('{} '.format(val))
-				curveFile.write('\n')
+	# print("Saving eval to: ", pathsDic['curve'] + '.txt', flush=True)
+	# if not args.args.dry:
+	# 	with open(pathsDic['curve'] + '.txt', 'w') as curveFile:
+	# 		for thresh in args.args.thresh_range:
+	# 			thresh = round(thresh, 4)
+	# 			curveFile.write('{:0.4f} '.format(thresh))
+	# 		curveFile.write('\n')
+	# 		for resultListType in resultMean:
+	# 			for val in resultListType:
+	# 				curveFile.write('{} '.format(val))
+	# 			curveFile.write('\n')
 	
-	return resultMean
+	return statsCurve
 
 
 def readCurveTxt(pathsDic):
@@ -161,20 +143,20 @@ def readCurveTxt(pathsDic):
 def test(pathsDic):
 	print('thresholds: ', args.args.thresh_range)
 
-	if not os.path.isfile(pathsDic['curve'] + '.txt'):
-		# use network and available weights to create curve
-		resultMean = evaluateNet(pathsDic)
-	else:
-		resultMean, tresholdList = readCurveTxt(pathsDic)
+	statsCurve = evaluateNet(pathsDic)
+	# if not os.path.isfile(pathsDic['curve'] + '.txt'):
+	# 	# use network and available weights to create curve
+	# 	statsCurve = evaluateNet(pathsDic)
+	# else:
+	# 	statsCurve, tresholdList = readCurveTxt(pathsDic)
 
-	# plot stats curve
-	import matplotlib.pyplot as plt
+	statsCurve.printPrecisionRecall()
+	## plot stats curve
 	# plot falseDiscoveryRate x missRate
-	if not args.args.dry:
-		Grimoire.pltCurve(resultMean[2], resultMean[0], "falseDiscoveryRate", "missRate")
-	# save img
-	pathCurvePic = pathsDic['curve'] + '.png'
+	pathCurvePic = pathsDic['curve'] + '-precisionRecall.png'
 	print("Saving curve to: ", pathCurvePic, flush=True)
 	if not args.args.dry:
+		statsCurve.plotPrecisionRecall()
+		# save img
 		plt.savefig(pathCurvePic)
 
