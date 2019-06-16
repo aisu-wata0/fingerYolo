@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import shlex
+import pickle
 
 import sys
 import errno
@@ -107,20 +108,13 @@ def evaluateNet(pathsDic):
 			print("mse=", np.mean(mseList))
 
 	statsCurve.end()
-	##
-	# save comparison stats to curve.txt
-	# print("Saving eval to: ", pathsDic['curve'] + '.txt', flush=True)
-	# if not args.args.dry:
-	# 	with open(pathsDic['curve'] + '.txt', 'w') as curveFile:
-	# 		for thresh in args.args.thresh_range:
-	# 			thresh = round(thresh, 4)
-	# 			curveFile.write('{:0.4f} '.format(thresh))
-	# 		curveFile.write('\n')
-	# 		for resultListType in resultMean:
-	# 			for val in resultListType:
-	# 				curveFile.write('{} '.format(val))
-	# 			curveFile.write('\n')
-	
+	## save curve obj to file
+	pathObj = pathsDic['curve'] + '.obj'
+	print("Saving statsCurve to: ", pathObj, flush=True)
+	if not args.args.dry:
+		with open(pathObj, 'wb') as curveFile:
+			pickle.dump(statsCurve, curveFile)
+
 	return statsCurve
 
 
@@ -141,16 +135,23 @@ def readCurveTxt(pathsDic):
 
 
 def test(pathsDic):
-	print('thresholds: ', args.args.thresh_range)
+	if args.args.verbose:
+		print('thresholds: ', args.args.thresh_range)
 
-	statsCurve = evaluateNet(pathsDic)
-	# if not os.path.isfile(pathsDic['curve'] + '.txt'):
-	# 	# use network and available weights to create curve
-	# 	statsCurve = evaluateNet(pathsDic)
-	# else:
-	# 	statsCurve, tresholdList = readCurveTxt(pathsDic)
+	if args.args.no_evaluate_cache or not os.path.isfile(pathsDic['curve'] + '.obj'):
+		# use network and available weights to create curve
+		statsCurve = evaluateNet(pathsDic)
+	else:
+		print("open: ", pathsDic['curve'] + '.obj', flush=True)
+		with open(pathsDic['curve'] + '.obj', 'rb') as curveFile:
+			statsCurve = pickle.load(curveFile)
 
-	statsCurve.printPrecisionRecall()
+	if statsCurve is None:
+		return None
+
+
+	if args.args.verbose:
+		statsCurve.printPrecisionRecall()
 	## plot stats curve
 	# plot falseDiscoveryRate x missRate
 	pathCurvePic = pathsDic['curve'] + '-precisionRecall.png'
@@ -158,5 +159,9 @@ def test(pathsDic):
 	if not args.args.dry:
 		statsCurve.plotPrecisionRecall()
 		# save img
+		if os.path.isfile(pathCurvePic):
+			os.remove(pathCurvePic)
 		plt.savefig(pathCurvePic)
+	
+	return statsCurve
 

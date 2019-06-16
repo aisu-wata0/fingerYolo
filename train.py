@@ -139,6 +139,8 @@ if __name__ == "__main__":
                      help="dry run")
 	parser.add_argument('-e', '--evaluate', action='store_true',
                      help="evaluate only, skip training")
+	parser.add_argument('-nec', '--no_evaluate_cache', action='store_true',
+                     help="don't use saved cached evaluate values")
 
 	group = parser.add_mutually_exclusive_group(required=False)
 	group.add_argument('-t', '--thresh', type=float,
@@ -146,8 +148,6 @@ if __name__ == "__main__":
 	group.add_argument('-tr', '--thresh_range', nargs=3, type=float,
                     help='evaluates with multiple threshold values, step specified',
                     metavar=('START', 'STOP', 'STEP'))
-	## Instantiate the parser
-	
 	## Parse arguments
 	args.args = parser.parse_args()
 
@@ -167,6 +167,10 @@ if __name__ == "__main__":
 	lastBoxSz = '0'
 
 	command = './darknet.exe detector train "{}" "{}" -map'
+	# list with the stat curve of the tests
+	statsCurveList = []
+	# list with the paths and config dictionary for each test
+	pathsDicList = []
 	for pathNetDir in args.args.pathNetDir:
 		pathsDic = files(pathNetDir)
 		if not pathsDic:
@@ -177,7 +181,31 @@ if __name__ == "__main__":
 		# evaluate if thresholds were specified
 		if len(args.args.thresh_range) > 0:
 			try:
-				test.test(pathsDic)
+				statsCurve = test.test(pathsDic)
+				if statsCurve is None:
+					continue
+				statsCurveList.append(statsCurve)
+				pathsDicList.append(pathsDic)
 			except Exception as err:
 				print(err)
 				traceback.print_exc()
+
+	Grimoire.statsCurve.plotCurves(statsCurveList)
+
+	pathCurvePic = './fingeryolo/' + 'curve-precisionRecallCompare.png'
+	print("Saving curve to: ", pathCurvePic, flush=True)
+	if not args.args.dry:
+		import matplotlib.pyplot as plt
+		Grimoire.statsCurve.plotCurves(statsCurveList, '-.')
+		labels = []
+		for idx, statsCurve in enumerate(statsCurveList):
+			labels.append(pathsDicList[idx]['name'])
+		plt.legend(labels)
+		# save img
+		if os.path.isfile(pathCurvePic):
+			os.remove(pathCurvePic)
+		plt.savefig(pathCurvePic)
+
+		for idx, statsCurve in enumerate(statsCurveList):
+			print("config: ", pathsDicList[idx]['name'], end=" \t")
+			print("auc", statsCurve.metricAuc())

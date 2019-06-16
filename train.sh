@@ -39,3 +39,18 @@ python fingeryolo/train.py   ./fingeryolo/testsOpen/* ./fingeryolo/testsClosed/*
 
 
 python fingeryolo/train.py   ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30/   -tr 0.025 1.0 0.025 -e 
+
+
+cd /e/Users/Serbena/Git/TG/darknet/build/darknet/x64/fingeryolo/testsClosed/v3-spp2-anchor1-box-40/preds
+mv pred-t0.050 pred-t0.050-bugged
+
+python fingeryolo/train.py   ./fingeryolo/testsClosed/v3-spp2-anchor1-box-40   -tr 0.025 1.0 0.025 -e  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
+
+
+py fingeryolo/template.py ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30/preds/pred-t0.400/
+
+python fingeryolo/train.py   ./fingeryolo/testsOpen/*  -tr 0.025 1.0 0.025 -e
+python fingeryolo/train.py   ./fingeryolo/testsClosed/*  -tr 0.025 1.0 0.025 -e
+
+# compare closed with open dataset networks
+python fingeryolo/train.py   ./fingeryolo/testsClosed/v3-spp2-anchor1-box-30 ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30 ./fingeryolo/testsClosed/v3-spp2-anchor1-box-16/ ./fingeryolo/testsOpen/v3-spp2-anchor1-box-16/  -tr 0.025 1.0 0.025 -e 

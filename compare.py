@@ -4,25 +4,12 @@ import os
 import glob
 import sys
 import traceback
-import Grimoire
+import logging as log
 
 from numba import jit
 
-import logging as log
-
-def readYoloLabelToPoint(lines, width=640, height=480):
-	minutiae = []
-	line_arg = 0
-	for line in lines:		
-		numberStrings = line.split(' ')
-		widthFloat = float(numberStrings[1])*width
-		heightFloat = float(numberStrings[2])*height
-		point = [int(round(widthFloat)), int(round(heightFloat))]
-		minutiae.append(point)
-
-		line_arg += 1
-
-	return minutiae
+import Grimoire
+import template
 
 
 @jit(nopython=True)
@@ -151,105 +138,6 @@ def minutia_match(pointsTypedA, pointsTypedB, threshold):
 	return [truePos, falsePos, falseNeg, mse]
 
 
-def minutia_matchSlow(pointsTypedA, pointsTypedB, threshold):
-	"""
-	----------
-	pointsTypedA : true points [[], [], []]
-	pointsTypedB : predicted points [[], [], []]
-	threshold : maximum pixel euclidean distance to consider true positive
-	-------
-	returns [truePos, falsePos, falseNeg, mse]
-	"""
-	# found points
-	truePos = 0
-	# not real points
-	falsePos = 0
-	# missed points
-	falseNeg = 0
-	# mean squared error of true points
-	mse = 0
-	mse_points = 0
-
-	# for each minutiae type
-	for type_no in range(len(pointsTypedA)):
-		# get each point list; e.g. points = [[y0,x0], [y1,x1], [y2,x2], [y3,x3]]
-		pointsA = np.array(pointsTypedA[type_no])
-		pointsB = np.array(pointsTypedB[type_no])
-		if pointsB.size == 0:
-			falseNeg += pointsA.shape[-2]
-			continue
-
-
-		# make distance matrix between points
-		# O(n^2) every point with each other
-		distances_shape = (len(pointsA), len(pointsB))
-		distances = np.full(distances_shape, -1)
-		for i_A in range(len(pointsA)):
-			for j_B in range(len(pointsB)):
-				# distances[i_A, j_B] = np.sqrt(
-				#     (pointsA[i_A][0]-pointsB[j_B][0]) ** 2 + (pointsA[i_A][1]-pointsB[j_B][1]) ** 2)
-
-				# distance between two points: pointsA[i_A], pointsB[j_B]
-				distances[i_A, j_B] = np.linalg.norm(pointsA[i_A] - pointsB[j_B])
-
-		# # print("distances", distances)
-		# print("distances sort", np.sort(distances.flatten()))
-		# sys.stdout.flush()
-
-		dist_arg_sort = np.dstack(np.unravel_index(
-			np.argsort(distances.ravel()), distances_shape))[0]
-		mask = np.ones(len(dist_arg_sort), dtype=bool)
-		maskA = np.ones(pointsA.shape[-2], dtype=bool)
-		maskB = np.ones(pointsB.shape[-2], dtype=bool)
-		for i_arg_dist in range(len(dist_arg_sort)):
-			# skip points already matched
-			if(mask[i_arg_dist] == False):
-				continue
-			# get what points are closest to each other
-			dist_smallest_arg = dist_arg_sort[i_arg_dist]
-			# how much is that smallest distance?
-			dist_smallest = distances[dist_smallest_arg[0], dist_smallest_arg[1]]
-
-			## mask points just matched
-			maskIndexes = np.where(
-									 (dist_arg_sort[:, 0] == dist_smallest_arg[0]))
-			mask[maskIndexes] = False
-
-			maskIndexes = np.where(
-									 (dist_arg_sort[:, 1] == dist_smallest_arg[1]))
-			mask[maskIndexes] = False
-
-			mask[i_arg_dist] = True
-			## mask points just matched
-
-			# distance over threshold
-			if(dist_smallest > threshold):
-				# print("--- Reached threshold after ", i_arg_dist, " points")
-				# print("--- distance of ", dist_smallest, " pixels")
-				continue
-				# break
-
-			maskA[dist_smallest_arg[0]] = False
-			maskB[dist_smallest_arg[1]] = False
-
-			truePos += 1
-
-			mse += dist_smallest ** 2
-			mse_points += 1
-
-		falseNeg += maskA.sum()
-		falsePos += maskB.sum()
-
-		# points = min(pointsTypedA[type_no].size//2, pointsTypedB[type_no].size//2)
-
-	if (mse_points == 0):
-		mse_points = 1
-
-	mse = mse/(mse_points*2)
-	
-	return [truePos, falsePos, falseNeg, mse]
-
-
 def compareLabelsDir(pathDirTrue, pathDirPred, threshold=16):
 	"""
 	Compares predicted labels directory with another one
@@ -274,14 +162,14 @@ def compareLabelsDir(pathDirTrue, pathDirPred, threshold=16):
 		try:
 			with open(pathFilePred, 'r') as filePred:
 				log.info('read: ' + pathFilePred)
-				pointsPred = readYoloLabelToPoint(filePred)
+				pointsPred = template.readYoloLabelToPoint(filePred)
 
 			if len(pointsPred) == 0:
 				log.info('No minutiae found in ' + pathFilePred)
 
 			with open(pathFileTrue, 'r') as fileTrue:
 				log.info('read: ' + pathFileTrue)
-				pointsTrue = readYoloLabelToPoint(fileTrue)
+				pointsTrue = template.readYoloLabelToPoint(fileTrue)
 
 			totalTruePos = len(pointsTrue)
 			totalPredPos = len(pointsPred)
@@ -361,7 +249,7 @@ if __name__ == "__main__":
 	filepath = './fingeryolo/labels-yolo-30/1_1.txt'
 	points = []
 	with open(filepath, "r") as file:
-		points = readYoloLabelToPoint(file)
+		points = template.readYoloLabelToPoint(file)
 
 	print(points)
 
