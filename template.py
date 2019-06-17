@@ -15,7 +15,11 @@ import args
 
 
 def minutiae2AfisDic(minutiaeList, angleList):
-	"""{
+	"""
+	From the import minutiae coordinate list and angle list outputs the afis dictionary template
+	minutiaeList = [[x0,y0], [x1,y1] ... ]  ,  angleList = [a0, a1 ... ]
+	Example afis template:
+		{
 			"width": 388,
 			"height": 374,
 			"minutiae": [
