@@ -1,0 +1,5 @@
+classes = 1
+train  = ./fingerYolo/testsOpenFull/train.txt
+valid  = ./fingerYolo/testsOpenFull/test.txt
+names = ./fingerYolo/testsOpenFull/obj.names
+backup = ./fingerYolo/testsOpenFull/weightBackups

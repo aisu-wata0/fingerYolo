@@ -60,7 +60,7 @@ if __name__ == "__main__":
                         help='Filetype in, e.g. mnt')
     parser.add_argument('-v', action='store_true',
                         help='Verbose, say file input and output paths')
-    parser.add_argument('-b', default='16',
+    parser.add_argument('-b', default='30',
                         help='Box size of the minutiae in pixels')
                         
     args = parser.parse_args()

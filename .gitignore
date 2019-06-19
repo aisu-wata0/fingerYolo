@@ -1,13 +1,21 @@
-tmp*
+# Database stuff
+FVC*
+*.mnt
+*.png
+*.bmp
+labels/
+
+finger-matcher
+
+# training stuff
 preds/
 weights/
 *.weights
-.vscode/
 imgs/
-labels/
-*.mnt
-*.png
 *.obj
+
+tmp*
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

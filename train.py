@@ -69,21 +69,22 @@ def train(pathsDic, lastBoxSz):
 	if not args.args.dry:
 		Grimoire.ensure_dir(pathsDic['backup'])
 
-	if lastBoxSz == 0 or lastBoxSz != pathsDic['boxSz']:
-		print('copying label files: ', pathsDic['labelsTrue'], ' ', pathsDic['imgs'], flush=True)
-		lastBoxSz = pathsDic['boxSz']
+	if args.args.auto_label_copy:
+		if lastBoxSz == 0 or lastBoxSz != pathsDic['boxSz']:
+			print('copying label files: ', pathsDic['labelsTrue'], ' ', pathsDic['imgs'], flush=True)
+			lastBoxSz = pathsDic['boxSz']
 
-		for labelPath in glob.iglob(pathsDic['labelsTrue'] + "/*.txt"):
-			# for each processed image path
-			# find label path (change ext to txt), and copy it to output dir
-			pathIn, basename = os.path.split(labelPath)
-			labelPathOut = pathsDic['imgs'] + '/' + basename
+			for labelPath in glob.iglob(pathsDic['labelsTrue'] + "/*.txt"):
+				# for each processed image path
+				# find label path (change ext to txt), and copy it to output dir
+				pathIn, basename = os.path.split(labelPath)
+				labelPathOut = pathsDic['imgs'] + '/' + basename
 
-			if(args.args.verbose):
-				print('cp ', labelPath, ' ', labelPathOut, flush=True)
+				if(args.args.verbose):
+					print('cp ', labelPath, ' ', labelPathOut, flush=True)
 
-			if not args.args.dry:
-				shutil.copy2(labelPath, labelPathOut)
+				if not args.args.dry:
+					shutil.copy2(labelPath, labelPathOut)
 
 	commandArgs = command.format(pathsDic['obj.data'], pathsDic['train.cfg'])
 	print("$ ", commandArgs, flush=True)
@@ -141,6 +142,8 @@ if __name__ == "__main__":
                      help="evaluate only, skip training")
 	parser.add_argument('-nec', '--no_evaluate_cache', action='store_true',
                      help="don't use saved cached evaluate values")
+	parser.add_argument('-alc', '--auto_label_copy', action='store_true',
+                     help="automatically copy ground truth labels from labels/labels-yolo-$X to imgs/  where X is the box size of the configuration (last number of the configuration directory). If all your images aren't in imgs/ it won't work")
 
 	group = parser.add_mutually_exclusive_group(required=False)
 	group.add_argument('-t', '--thresh', type=float,

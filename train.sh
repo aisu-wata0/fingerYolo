@@ -54,3 +54,13 @@ python fingeryolo/train.py   ./fingeryolo/testsClosed/*  -tr 0.025 1.0 0.025 -e
 
 # compare closed with open dataset networks
 python fingeryolo/train.py   ./fingeryolo/testsClosed/v3-spp2-anchor1-box-30 ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30 ./fingeryolo/testsClosed/v3-spp2-anchor1-box-16/ ./fingeryolo/testsOpen/v3-spp2-anchor1-box-16/  -tr 0.025 1.0 0.025 -e 
+
+
+# prepare database
+
+for dir in "FVC2004DB2" "FVC2004DB3" "FVC2004DB4" ; do python convert-img-ext.py -f bmp "$dir" "$dir" ; done
+
+for dir in "FVC2004DB2" "FVC2004DB3" "FVC2004DB4" ; do python convert-labels-mnt-yolo.py "$dir" "$dir" ; done
+
+
+python fingeryolo/train.py   ./fingeryolo/testsOpenFull/*  -tr 0.025 1.0 0.025  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
