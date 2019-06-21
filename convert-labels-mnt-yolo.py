@@ -140,6 +140,10 @@ if __name__ == "__main__":
                 # class_id = classes.index(cls)
                 ## only one class
                 class_id = 0
+                ## if mnt has class information
+                if len(elems) > 3:
+                    class_id = int(elems[3])
+
                 ## 
                 # minutia center position
                 x = float(elems[0])

@@ -1,0 +1,5 @@
+classes = 2
+train  = ./fingerYolo/testsOpenFM3/train.txt
+valid  = ./fingerYolo/testsOpenFM3/test.txt
+names = ./fingerYolo/testsOpenFM3/obj.names
+backup = ./fingerYolo/testsOpenFM3/weightBackups

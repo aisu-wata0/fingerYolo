@@ -160,7 +160,7 @@ if __name__ == "__main__":
 	else:
 		log.basicConfig(format="%(levelname)s: %(message)s")
 
-	args.args.thresholds = []
+
 	if args.args.thresh:
 		args.args.thresh_range.append(args.args.thresh)
 	elif args.args.thresh_range:
@@ -182,7 +182,7 @@ if __name__ == "__main__":
 		if not args.args.evaluate:
 			lastBoxSz = train(pathsDic, lastBoxSz)
 		# evaluate if thresholds were specified
-		if len(args.args.thresh_range) > 0:
+		if args.args.thresh_range is not None:
 			try:
 				statsCurve = test.test(pathsDic)
 				if statsCurve is None:

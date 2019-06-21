@@ -63,4 +63,14 @@ for dir in "FVC2004DB2" "FVC2004DB3" "FVC2004DB4" ; do python convert-img-ext.py
 for dir in "FVC2004DB2" "FVC2004DB3" "FVC2004DB4" ; do python convert-labels-mnt-yolo.py "$dir" "$dir" ; done
 
 
-python fingeryolo/train.py   ./fingeryolo/testsOpenFull/*  -tr 0.025 1.0 0.025  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
+python fingeryolo/train.py   ./fingeryolo/testsOpenFull/*  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
+
+py fingeryolo/template.py ./fingeryolo/testsOpen/v3-spp2-anchor1-box-30/preds/pred-t0.200/
+
+for dir in "labels/FM3_FVC2004DB1A_MNT" "labels/FM3_FVC2004DB3A_MNT" ; do python convert-labels-mnt-yolo.py "$dir" "$dir" ; done
+
+
+for dir in "FVC2004DB4" "FVC2004DB2"  ; do mkdir "${dir}_old"; mv ${dir}/*.bmp "${dir}_old/"; mv ${dir}/*.mnt "${dir}_old/" ; done
+
+
+python fingeryolo/train.py ./fingeryolo/testsOpenFM3/*  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
