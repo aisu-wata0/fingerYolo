@@ -1,4 +1,4 @@
-
+#! python3
 from PIL import Image
 import numpy as np
 from scipy import ndimage, misc, signal
@@ -130,15 +130,15 @@ def gradient(img, blk_sz):
 @jit(nopython=True)
 def gradientAux(img, blk_sz, dx, dy):
 	img_alpha_x = dx*dx - dy*dy
-	img_alpha_y = 2 * np.multiply(dx, dy)
+	img_alpha_y = 2 * dx * dy
 
-	img_alpha_x_block = [[np.sum(img_alpha_x[index_y: index_y + blk_sz, index_x: index_x + blk_sz]) / blk_sz**2
-								 for index_x in range(0, img.shape[0], blk_sz)]
-								for index_y in range(0, img.shape[1], blk_sz)]
+	img_alpha_x_block = [[np.sum(img_alpha_x[idx_y: idx_y + blk_sz, idx_x: idx_x + blk_sz]) / blk_sz**2
+								 for idx_x in range(0, img.shape[0], blk_sz)]
+								for idx_y in range(0, img.shape[1], blk_sz)]
 
-	img_alpha_y_block = [[np.sum(img_alpha_y[index_y: index_y + blk_sz, index_x: index_x + blk_sz]) / blk_sz**2
-								 for index_x in range(0, img.shape[0], blk_sz)]
-								for index_y in range(0, img.shape[1], blk_sz)]
+	img_alpha_y_block = [[np.sum(img_alpha_y[idx_y: idx_y + blk_sz, idx_x: idx_x + blk_sz]) / blk_sz**2
+								 for idx_x in range(0, img.shape[0], blk_sz)]
+								for idx_y in range(0, img.shape[1], blk_sz)]
 
 	img_alpha_x_block = np.array(img_alpha_x_block)
 	img_alpha_y_block = np.array(img_alpha_y_block)

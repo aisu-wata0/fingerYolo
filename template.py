@@ -1,4 +1,4 @@
-
+#! python3
 import traceback
 
 import cv2
@@ -101,6 +101,9 @@ def yolo2afis(pathLabel, pathImg, imgShape, blk_sz=11):
 	return grimoire.stats(), mseList
 	"""
 	img = cv2.imread(pathImg, cv2.IMREAD_GRAYSCALE)
+	if img is None:
+		print("#### Error, couldn't open file ", pathImg)
+		return [],[]
 	orientationField = fingerprint.orientationField(img, blk_sz)
 	minutiaeList = yoloFile2coord(pathLabel, imgShape)
 	angleList = fingerprint.minutiaeOrientation(orientationField, blk_sz, minutiaeList)
@@ -126,7 +129,9 @@ if __name__ == "__main__":
 	parser.add_argument('-v', '--verbose', action='store_true',
 							help='verbose')
 	parser.add_argument('-d', '--dry', action='store_true',
-							help="dry run")
+                     help="dry run")
+	parser.add_argument('--img_dir', required=False, default=Grimoire.getDirLocation(__file__) + "/" + "imgs/",
+                     help="directory where the images are located")
 	## Parse arguments
 	args.args = parser.parse_args()
 	
@@ -139,7 +144,7 @@ if __name__ == "__main__":
 
 	imgShape = (640, 480)
 	blk_sz = 11
-	pathDirImgs = "fingeryolo/imgs"
+	pathDirImgs = args.args.img_dir
 	
 	for pathDir in args.args.pathDir:
 		log.info('convert directory to afis: ' + pathDir)

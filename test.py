@@ -1,5 +1,4 @@
 #! python3
-
 import glob
 import os
 import shutil

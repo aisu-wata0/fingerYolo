@@ -1,3 +1,4 @@
+#! python3
 import glob, os
 import errno
 from os.path import basename

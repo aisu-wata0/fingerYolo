@@ -9,6 +9,7 @@ labels/
 finger-matcher
 
 # training stuff
+scores/
 preds/
 weights/
 *.weights

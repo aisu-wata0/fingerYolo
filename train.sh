@@ -1,3 +1,4 @@
+#! bash
 python fingeryolo/train.py ./fingeryolo/testsClosed/v2-yolo-anchor5-box-30/  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-30/  ./fingeryolo/testsClosed/v3-tiny-anchor1-box-30/  ./fingeryolo/testsClosed/v2-tiny-anchor5-box-30/  ./fingeryolo/testsClosed/v3-spp2-anchor0-box-30/  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-40/  ./fingeryolo/testsClosed/v3-yolo-anchor1-box-30/  ./fingeryolo/testsClosed/v2-voc-anchor5-box-30/  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-16/  ./fingeryolo/testsClosed/v3-spp2-anchor1-box-60/ -tr 0.05 1.0 0.05 --dry | tee train-testsClosed-$(date +%Y%m%d-%H%M).log
 
 python fingeryolo/train.py ./fingeryolo/testsClosed/v3-spp2-anchor1-box-30/ --dry | tee train-20190608-v3-spp2-anchor1-box-30.log
@@ -74,3 +75,14 @@ for dir in "FVC2004DB4" "FVC2004DB2"  ; do mkdir "${dir}_old"; mv ${dir}/*.bmp "
 
 
 python fingeryolo/train.py ./fingeryolo/testsOpenFM3/*  2>&1 | tee train-$(date +%Y%m%d-%H%M).log
+
+
+cd finger-matcher
+./run.sh ../testsOpen/v3-spp2-anchor1-box-30/preds/pred-t0.200-afis  2>&1 | tee ROC-$(date +%Y%m%d-%H%M).log
+cd ..
+
+
+py finger-matcher.py ../testsOpen/v3-spp2-anchor1-box-30/preds/pred-t0.425   2>&1 | tee finger-matcher/logs/ROC-$(date +%Y%m%d-%H%M).log
+py plt_match_curve.py -g finger-matcher/genuine_scores.txt -i finger-matcher/impostor_scores.txt
+
+py plt_match_curve_batch.py ./testsOpen/v3-spp2-anchor1-box-30/preds/pred-t*[^se]   2>&1 | tee logs/ROC-$(date +%Y%m%d-%H%M).log
