@@ -147,6 +147,8 @@ def gradientAux(img, blk_sz, dx, dy):
 
 	return orientation_blocks
 
+
+
 def sobel_filter(img, axis):
 	img = img.astype(np.float)
 
@@ -503,4 +505,117 @@ def minutiaeOrientation(orientation_blocks, blk_sz, minutiaeList):
 			sys.stderr.flush()
 		else:
 			angleList.append(angle)
+	return angleList
+
+
+class Coordinate(object):
+	def __init__(self, y, x):
+		self.y = y
+		self.x = x
+		return
+
+
+def gradient_window(img):
+	"""
+	Assumes img is a square, extract smooth angle of center pixel
+	"""
+	# dx = sobel_filter(img, 0)
+	# dy = sobel_filter(img, 1)
+	dy = cv2.Sobel(img, cv2.CV_32F, 1, 0, ksize=3)
+	dx = cv2.Sobel(img, cv2.CV_32F, 0, 1, ksize=3)
+	# with double the angle and squared magnitude
+	angle_cos = dx*dx - dy*dy
+	angle_sin = 2 * dx * dy
+	# assumes img is a square
+	blk_sz = min(img.shape[0], img.shape[1])
+	if not (blk_sz % 2 == 1):
+		blk_sz = blk_sz-1
+	if not (blk_sz > 0):
+		blk_sz = 3
+	### average filter
+	smooth_angle_sin = np.mean(angle_sin)
+	smooth_angle_cos = np.mean(angle_cos)
+	### gaussian filter
+	# borderType = cv2.BORDER_CONSTANT
+	# filterShape = (blk_sz, blk_sz)
+	# if not (filterShape[0] > 0 and filterShape[0] % 2 == 1 and filterShape[1] > 0 and filterShape[1] % 2 == 1):
+	# 	print(
+	# 		"filterShape[0] > 0, filterShape[0] % 2 == 1, filterShape[1] > 0, filterShape[1] % 2 == 1")
+	# 	print(filterShape[0] > 0, filterShape[0] % 2 == 1,
+	# 	      filterShape[1] > 0, filterShape[1] % 2 == 1)
+	# 	print(filterShape, flush=True)
+	# # sin
+	# smooth_angle_sin = cv2.GaussianBlur(angle_sin, filterShape, 0,
+   #                                  borderType=borderType)
+	# # center pixel
+	# smooth_angle_sin = smooth_angle_sin[smooth_angle_sin.shape[0] //
+   #                                 2, smooth_angle_sin.shape[1]//2]
+	# # cos
+	# smooth_angle_cos = cv2.GaussianBlur(angle_cos, filterShape, 0,
+   #                                  borderType=borderType)
+	# # center pixel
+	# smooth_angle_cos = smooth_angle_cos[smooth_angle_cos.shape[0] //
+   #                                 2, smooth_angle_cos.shape[1]//2]
+	### arctan2
+	smooth_angle = np.arctan2(smooth_angle_sin, smooth_angle_cos) / 2
+
+	return smooth_angle % 3.14
+
+
+def drawLine(img, centerCoord, angle, length, thicc=4, color=(0, 255, 0)):
+	x1 = int(centerCoord[1] + (length*np.cos(angle))//2)
+	y1 = int(centerCoord[0] - (length*np.sin(angle))//2)
+	x2 = int(centerCoord[1] - (length*np.cos(angle))//2)
+	y2 = int(centerCoord[0] + (length*np.sin(angle))//2)
+	print("angle", angle, np.degrees(angle), flush=True)
+	cv2.line(img, (x1, y1), (x2, y2), color, thicc)
+	return
+
+
+def localOrientation(img, coord, blk_sz=31):
+	angle = 0
+	blk_sz_half = blk_sz // 2
+	# extract window around pixel coordinate
+	beg = np.array([coord[0] - blk_sz_half, coord[1] - blk_sz_half+1])
+	end = np.array([coord[0] + blk_sz_half, coord[1] + blk_sz_half+1])
+	# check bounds
+	if np.any(beg < 0):
+		blk_sz_half = min(coord[0], coord[1])
+	if np.any(end > img.shape):
+		blk_sz_half = blk_sz_half + np.min(img.shape - end)
+	# recalculate window
+	beg = np.array([coord[0] - blk_sz_half, coord[1] - blk_sz_half+1])
+	end = np.array([coord[0] + blk_sz_half, coord[1] + blk_sz_half+1])
+	
+	img = img[beg[0]:end[0], beg[1]: end[1]]
+	# print("img.shape", img.shape, flush=True)
+	# estimate angle of center pixel
+	angle = gradient_window(img)
+	## draw line for visualization
+	# drawLine(img, (img.shape[0]//2, img.shape[1]//2), angle, blk_sz)
+	# cv2.imshow('img', img)
+	# print('img', img)
+	# cv2.waitKey(0)
+	# cv2.destroyAllWindows()
+	return angle
+
+def minutiaeLocalOrientation(img, minutiaeList):
+	angleList = []
+	### enhance img before extracting angles
+	# img = enhance.contrast(img)
+	# img = enhance.median_filter(img, 5)
+	for minutiae in minutiaeList:
+		try:
+			# coord = Coordinate(y=minutiae[1], x=minutiae[0])
+			# numpy is (y,x)   <---  yolo is (x, y)
+			coord = (minutiae[1], minutiae[0])
+			angle = localOrientation(img, coord)
+		except IndexError as err:
+			angleList.append(0.0)
+			print('--Exception ', err, ' in minutiaeLocalOrientation: coord=', coord, flush=True)
+			traceback.print_exc()
+			sys.stderr.flush()
+		else:
+			angleList.append(angle)
+
 	return angleList

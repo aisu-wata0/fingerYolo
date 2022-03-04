@@ -1,17 +1,20 @@
 #! python3
 import os
 import logging as log
+import traceback
 import subprocess
 import shutil
-import Grimoire
 import numpy as np
+
+import Grimoire
 import args
+import template
 
 
-def scores_from_predict_dir(dirPath):
+def scores_from_predict_dir(dirPath, dirSuffix='-afis', angleTech='map'):
 	dirPath = dirPath.rstrip('/')
 	# afis template directory
-	dirAfisPath = dirPath + '-afis'
+	dirAfisPath = dirPath + dirSuffix
 	# score directory location
 	head, dirname = os.path.split(dirPath)
 	scoresDir = os.path.dirname(head) + '/scores/'
@@ -20,6 +23,11 @@ def scores_from_predict_dir(dirPath):
 	# score filepaths
 	genuinePath = filepath + "-" + "genuine_scores.txt"
 	impostorPath = filepath + "-" + "impostor_scores.txt"
+	if dirSuffix != '-afis':
+		genuinePath = filepath + "-" + dirSuffix +"-" + "genuine_scores.txt"
+		print("genuinePath",genuinePath )
+		impostorPath = filepath + "-"+  dirSuffix + "-" + "impostor_scores.txt"
+
 	
 	if os.path.isfile(genuinePath) and os.path.isfile(impostorPath):
 		return genuinePath, impostorPath
@@ -27,11 +35,17 @@ def scores_from_predict_dir(dirPath):
 	if not os.path.isdir(dirAfisPath):
 	# if True:
 		# if not, transform to afis template
-		command = 'py template.py "{}"'
-		commandArgs = command.format(dirPath)
+		command = 'py template.py "{}" --img_dir "{}"'
+		commandArgs = command.format(dirPath, args.args.img_dir)
 		print("$ ", commandArgs, flush=True)
 		if not args.args.dry:
-			subprocess.call(commandArgs)
+			# subprocess.call(commandArgs)
+			try:
+				template.main([dirPath], args.args.img_dir, angleTech, dirSuffix=dirSuffix)
+			except Exception as e:
+				print('Exception in commandArgs: ', commandArgs)
+				print(e, flush=True)
+				traceback.print_exc()
 	## call matcher to calculate scores
 	command = 'java -jar ' + Grimoire.getDirLocation(
             __file__) + '/' + 'finger-matcher/target/finger-matcher-1.0-SNAPSHOT-jar-with-dependencies.jar "{}"'

@@ -9,6 +9,7 @@ import cv2
 import scikitplot as skplt
 import sklearn
 import matplotlib.pyplot as plt
+import matplotlib.ticker
 
 import args
 
@@ -25,15 +26,41 @@ import args
 # 		self.falseNeg = None
 
 
-def create_figure(pltStyle='default', lineWidth=2, dpi=300):
+def create_figure(pltStyle='default', lineWidth=2, dpi=300, numTicks=9, scale='linear',limits = [0.0, 1.0,  0.0, 1.0]):
 	plt.style.use(pltStyle)
-	plt.figure(dpi=dpi)
+	fig, ax = plt.subplots()
+	fig.set_dpi(dpi)
 	plt.xlabel('False Positive Rate')
 	plt.ylabel('True Positive Rate')
 	plt.title('Receiver operating characteristic curve')
 	plt.plot([0, 1], [0, 1], color='navy', lw=lineWidth, linestyle='--')
 	plt.xlim([0.0, 1.0])
 	plt.ylim([0.0, 1.0])
+	plt.grid(linestyle='--', which='major', alpha=0.5)
+	plt.grid(linestyle=':', which='minor', alpha=0.25)
+
+	ticks_to_useX = None
+	if scale == 'log':
+		ticks_to_useX = np.logspace(
+			np.log10(limits[0]), np.log10(limits[1]), num=numTicks, base=10)
+		ticks_to_useY = np.logspace(
+			np.log10(limits[2]), np.log10(limits[3]), num=numTicks, base=10)
+		# remove minor ticks, they aren't in sync
+		ax.set_xticks([], minor=True)
+		ax.set_yticks([], minor=True)
+		# couldn't make below work
+		# ax.xaxis.set_major_locator(matplotlib.ticker.LogLocator(base=10.0, subs='all', numticks=3))
+	elif scale == 'linear':
+		ax.xaxis.set_major_locator(matplotlib.ticker.LinearLocator(numTicks))
+		ax.xaxis.set_minor_locator(matplotlib.ticker.LinearLocator(numTicks*2-1))
+		ax.yaxis.set_major_locator(matplotlib.ticker.LinearLocator(numTicks))
+		ax.yaxis.set_minor_locator(matplotlib.ticker.LinearLocator(numTicks*2-1))
+
+	if ticks_to_useX is not None:
+		ticks_to_useX = np.round(ticks_to_useX, 2)
+		ticks_to_useY = np.round(ticks_to_useY, 2)
+		ax.set_xticks(ticks_to_useX)
+		ax.set_yticks(ticks_to_useY)
 
 
 def plt_values(y_true, y_probas, label='', linestyle='-.', lineWidth=1):

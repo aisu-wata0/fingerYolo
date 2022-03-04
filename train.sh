@@ -85,4 +85,52 @@ cd ..
 py finger-matcher.py ../testsOpen/v3-spp2-anchor1-box-30/preds/pred-t0.425   2>&1 | tee finger-matcher/logs/ROC-$(date +%Y%m%d-%H%M).log
 py plt_match_curve.py -g finger-matcher/genuine_scores.txt -i finger-matcher/impostor_scores.txt
 
-py plt_match_curve_batch.py ./testsOpen/v3-spp2-anchor1-box-30/preds/pred-t*[^se]   2>&1 | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+py plt_match_curve_batch.py ./testsOpen/v3-spp2-anchor1-box-30/preds/pred-t*[^a-z]   2>&1 | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+
+python fingeryolo/train.py ./fingeryolo/testsOpenFM3/* -tr 0.050 1.0 0.050 -e --dry 2>&1 | tee fingeryolo/logs/train-$(date +%Y%m%d-%H%M).log
+ 
+
+#   ./fingeryolo/testsOpenFM3/* -> sourceAfis -> ROCcuve
+
+py plt_match_curve_batch.py ./testsOpenFM3/v2-yolo-anchor5-box-30/preds/pred-t*[^a-z] --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+py plt_match_curve_batch.py ./testsOpenFM3/v3-spp2-anchor2-box-30/preds/pred-t*[^a-z] --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+py plt_match_curve_batch.py ./testsOpenFM3/v3-spp3-anchor2-box-30/preds/pred-t*[^a-z] --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+py plt_match_curve_batch.py ./testsOpenFM3/v3-tiny-anchor1-box-30/preds/pred-t*[^a-z] --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+py plt_match_curve_batch.py ./testsOpenFM3/v3-yolo-anchor1-box-30/preds/pred-t*[^a-z] --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+# ./testsOpenFM3/*/preds/pred-t*[^a-z]
+
+
+
+py plt_match_curve_batch.py  ./testsOpenFM3/v2-yolo-anchor5-box-30/preds/pred-t*[^a-z]   ./testsOpenFM3/v3-spp2-anchor2-box-30/preds/pred-t*[^a-z]  ./testsOpenFM3/v3-spp3-anchor2-box-30/preds/pred-t*[^a-z]  ./testsOpenFM3/v3-tiny-anchor1-box-30/preds/pred-t*[^a-z]  ./testsOpenFM3/v3-yolo-anchor1-box-30/preds/pred-t*[^a-z] --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+
+py plt_match_curve_batch.py  ./testsOpenFM3/v3-spp2-anchor2-box-30/preds/pred-t*[^a-z]  --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+
+py plt_match_curve_batch.py  ./testsOpen/v3-spp2-anchor1-box-30/preds/pred-t*[^a-z]  --img_dir imgs 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+# changed finger-matcher main to receive list of files instead of directory as argument
+# /e/Users/Serbena/Git/TG/darknet/build/darknet/x64
+cd ..
+java -jar ./fingeryolo/finger-matcher/target/finger-matcher-1.0-SNAPSHOT-jar-with-dependencies.jar "./fingeryolo/testsOpenFM3/test.txt"
+# mv genuine_scores impostor_scores to fingeryolo
+
+# RELEVANT
+py plt_match_curve_batch.py  ./testsOpenFM3/v2-yolo-anchor5-box-30/preds/pred-t*[^a-z]   ./testsOpenFM3/v3-spp2-anchor2-box-30/preds/pred-t*[^a-z]   ./testsOpenFM3/v3-tiny-anchor1-box-30/preds/pred-t*[^a-z]  --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+# changed back: finger-matcher main to receive directory instead of list of files as argument
+py plt_match_curve_batch.py  ./testsOpen/*/preds/pred-t*[^a-z]     --img_dir imgs    2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+
+sed -i -r 's/"direction": [0-9]\.[^ ]*[0-9], "typ/"direction": 0.0, "typ/g' *
+
+py plt_match_curve_batch.py  ./testsOpenFM3/v2-yolo-anchor5-box-30/preds/pred-t*[^a-z]   ./testsOpenFM3/v3-spp2-anchor2-box-30/preds/pred-t*[^a-z]   ./testsOpenFM3/v3-tiny-anchor1-box-30/preds/pred-t*[^a-z]   ./testsOpen/v2-yolo-anchor5-box-30/preds/pred-t*[^a-z]     ./testsOpen/v2-voc-anchor5-box-30/preds/pred-t*[^a-z]   ./testsOpen/v3-spp2-anchor1-box-30/preds/pred-t*[^a-z]   ./testsOpen/v3-yolo-anchor1-box-30/preds/pred-t*[^a-z]    --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+
+
+py plt_match_curve_batch.py   ./testsOpen/v2-voc-anchor5-box-30/preds/pred-t0.100 ./testsOpen/v2-yolo-anchor5-box-30/preds/pred-t0.100 ./testsOpen/v3-spp2-anchor0-box-30/preds/pred-t0.100 ./testsOpen/v3-spp2-anchor1-box-16/preds/pred-t0.100 ./testsOpen/v3-spp2-anchor1-box-30/preds/pred-t0.100 ./testsOpen/v3-spp2-anchor1-box-40/preds/pred-t0.100 ./testsOpen/v3-spp2-anchor1-box-60/preds/pred-t0.100 ./testsOpen/v3-tiny-anchor1-box-30/preds/pred-t0.100 ./testsOpen/v3-yolo-anchor1-box-30/preds/pred-t0.100  --img_dir imgs    2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log
+ 
+
+
+py plt_match_curve_batch.py  ./testsOpenFM3/v3-spp2-anchor2-box-30/preds/pred-t0.10*[^a-z]  --img_dir imgs_FM3 2>&1  | tee logs/ROC-$(date +%Y%m%d-%H%M).log

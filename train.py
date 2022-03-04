@@ -19,6 +19,8 @@ def files(pathNetDir):
 		print("-- skipping, not a directory: ", pathNetDir, flush=True)
 		return None
 	print('Running dir ', pathNetDir, flush=True)
+	# name of test directory (parent)
+	pathTestDir = os.path.dirname(pathNetDir)
 	# find out name of net
 	pathsDic['name'] = os.path.basename(pathNetDir)
 	if not pathsDic['name']:
@@ -26,9 +28,10 @@ def files(pathNetDir):
 
 	pathsDic['boxSz'] = pathsDic['name'].split('-')[-1]
 	
+
 	pathsDic['train.cfg'] = pathNetDir + '/' + pathsDic['name'] + '-train.cfg'
 	pathsDic['test.cfg'] = pathNetDir + '/' + pathsDic['name'] + '.cfg'
-	pathsDic['obj.data'] = pathNetDir + '/../' + 'obj.data'
+	pathsDic['obj.data'] = pathTestDir + '/' + 'obj.data'
 
 	pathsDic['weights'] = pathNetDir + '/weights'
 	pathsDic['chart'] = pathNetDir + '/' + 'chart-' + pathsDic['name'] + '.png'
@@ -194,7 +197,7 @@ if __name__ == "__main__":
 
 	Grimoire.statsCurve.plotCurves(statsCurveList)
 
-	pathCurvePic = './fingeryolo/' + 'curve-precisionRecallCompare.png'
+	pathCurvePic = './fingeryolo/' + 'curve-precisionRecallCompare-' + Grimoire.timestamp() + '.png'
 	print("Saving curve to: ", pathCurvePic, flush=True)
 	if not args.args.dry:
 		import matplotlib.pyplot as plt
@@ -204,9 +207,7 @@ if __name__ == "__main__":
 			labels.append(pathsDicList[idx]['name'])
 		plt.legend(labels)
 		# save img
-		if os.path.isfile(pathCurvePic):
-			os.remove(pathCurvePic)
-		plt.savefig(pathCurvePic)
+		plt.savefig(pathCurvePic, dpi=300)
 
 		for idx, statsCurve in enumerate(statsCurveList):
 			print("config: ", pathsDicList[idx]['name'], end=" \t")
